@@ -1,0 +1,3 @@
+LIBRARY pkcs11-cng-bridge
+EXPORTS
+    C_GetFunctionList
