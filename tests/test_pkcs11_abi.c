@@ -5,10 +5,10 @@
 
 #if defined(_WIN64)
 _Static_assert(sizeof(CK_ULONG) == 4, "PKCS#11 CK_ULONG must be 32-bit on Windows");
-_Static_assert(sizeof(CK_FUNCTION_LIST) == 552, "Unexpected 64-bit CK_FUNCTION_LIST layout");
+_Static_assert(sizeof(CK_FUNCTION_LIST) == 546, "Unexpected packed 64-bit CK_FUNCTION_LIST layout");
 #else
 _Static_assert(sizeof(CK_ULONG) == 4, "PKCS#11 CK_ULONG must be 32-bit on Windows");
-_Static_assert(sizeof(CK_FUNCTION_LIST) == 276, "Unexpected 32-bit CK_FUNCTION_LIST layout");
+_Static_assert(sizeof(CK_FUNCTION_LIST) == 274, "Unexpected packed 32-bit CK_FUNCTION_LIST layout");
 #endif
 
 typedef CK_RV (__cdecl *get_function_list_fn)(CK_FUNCTION_LIST_PTR_PTR);

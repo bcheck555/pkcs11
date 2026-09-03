@@ -11,6 +11,10 @@
 #define CK_DECLARE_FUNCTION_POINTER(returnType, name) returnType (CK_PTR name)
 #endif
 
+#if defined(_WIN32)
+#pragma pack(push, cryptoki, 1)
+#endif
+
 typedef unsigned char CK_BYTE;
 typedef CK_BYTE CK_PTR CK_BYTE_PTR;
 typedef unsigned char CK_CHAR;
@@ -269,5 +273,9 @@ struct CK_FUNCTION_LIST {
 #define CKA_ALWAYS_AUTHENTICATE 0x00000202UL
 #define CKM_RSA_PKCS 0x00000001UL
 #define CKM_ECDSA 0x00001041UL
+
+#if defined(_WIN32)
+#pragma pack(pop, cryptoki)
+#endif
 
 #endif
