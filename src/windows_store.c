@@ -61,8 +61,14 @@ static int load_rsa_public_key(BCRYPT_KEY_HANDLE key, bridge_certificate *entry)
     blob = (BCRYPT_RSAKEY_BLOB *)bridge_alloc(size);
     if (!blob) return 0;
     status = BCryptExportKey(key, NULL, BCRYPT_RSAPUBLIC_BLOB, (PUCHAR)blob, size, &written, 0);
-    if (status < 0 || written < sizeof(*blob) ||
-        blob->Magic != BCRYPT_RSAPUBLIC_MAGIC || !blob->cbModulus || !blob->cbPublicExp) {
+    /* Validate the returned buffer before accessing any header fields. */
+    if (status < 0 || written > size || written < sizeof(*blob)) {
+        bridge_free(blob);
+        return 0;
+    }
+    if (blob->Magic != BCRYPT_RSAPUBLIC_MAGIC ||
+        !bridge_rsa_blob_lengths_valid(size, written, sizeof(*blob),
+                                       blob->cbPublicExp, blob->cbModulus)) {
         bridge_free(blob);
         return 0;
     }

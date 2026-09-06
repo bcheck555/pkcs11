@@ -1,3 +1,8 @@
+#if !defined(_WIN32_WINNT) || _WIN32_WINNT < 0x0600
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
+
 #include "pkcs11.h"
 #include "windows_store.h"
 
@@ -572,16 +577,22 @@ static CK_RV bridge_C_Sign(CK_SESSION_HANDLE handle, CK_BYTE_PTR data, CK_ULONG 
 
 #define FN(name) ((CK_VOID_PTR)(name))
 static CK_FUNCTION_LIST function_list;
-static volatile LONG function_list_ready;
+static INIT_ONCE function_list_once = INIT_ONCE_STATIC_INIT;
 
-static void prepare_function_list(void) {
-    if (InterlockedCompareExchange(&function_list_ready, 0, 0)) return;
+CK_DECLARE_FUNCTION(CK_RV, C_GetFunctionList)(CK_FUNCTION_LIST_PTR_PTR output);
+
+static BOOL CALLBACK prepare_function_list(PINIT_ONCE once, PVOID parameter,
+                                           PVOID *context) {
+    (void)once;
+    (void)parameter;
+    (void)context;
     ZeroMemory(&function_list, sizeof(function_list));
     function_list.version.major = 2;
     function_list.version.minor = 40;
     function_list.C_Initialize = FN(bridge_C_Initialize);
     function_list.C_Finalize = FN(bridge_C_Finalize);
     function_list.C_GetInfo = FN(bridge_C_GetInfo);
+    function_list.C_GetFunctionList = FN(C_GetFunctionList);
     function_list.C_GetSlotList = FN(bridge_C_GetSlotList);
     function_list.C_GetSlotInfo = FN(bridge_C_GetSlotInfo);
     function_list.C_GetTokenInfo = FN(bridge_C_GetTokenInfo);
@@ -647,13 +658,13 @@ static void prepare_function_list(void) {
     function_list.C_GetFunctionStatus = FN(unsupported);
     function_list.C_CancelFunction = FN(unsupported);
     function_list.C_WaitForSlotEvent = FN(unsupported);
-    InterlockedExchange(&function_list_ready, 1);
+    return TRUE;
 }
 
 CK_DECLARE_FUNCTION(CK_RV, C_GetFunctionList)(CK_FUNCTION_LIST_PTR_PTR output) {
     if (!output) return CKR_ARGUMENTS_BAD;
-    prepare_function_list();
-    function_list.C_GetFunctionList = FN(C_GetFunctionList);
+    if (!InitOnceExecuteOnce(&function_list_once, prepare_function_list, NULL, NULL))
+        return CKR_GENERAL_ERROR;
     *output = &function_list;
     return CKR_OK;
 }

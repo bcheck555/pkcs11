@@ -10,6 +10,22 @@ static int failures;
     ++failures; \
 } } while (0)
 
+static void test_rsa_blob_lengths(void) {
+    CHECK(bridge_rsa_blob_lengths_valid(283, 283, 24, 3, 256));
+    CHECK(bridge_rsa_blob_lengths_valid(300, 290, 24, 3, 256));
+    CHECK(!bridge_rsa_blob_lengths_valid(283, 23, 24, 3, 256));
+    CHECK(!bridge_rsa_blob_lengths_valid(282, 283, 24, 3, 256));
+    CHECK(!bridge_rsa_blob_lengths_valid(283, 283, 24, 0, 256));
+    CHECK(!bridge_rsa_blob_lengths_valid(283, 283, 24, 3, 0));
+    CHECK(!bridge_rsa_blob_lengths_valid(283, 26, 24, 3, 256));
+    CHECK(!bridge_rsa_blob_lengths_valid(283, 282, 24, 3, 256));
+    CHECK(!bridge_rsa_blob_lengths_valid(283, 283, 24, SIZE_MAX, 256));
+    CHECK(!bridge_rsa_blob_lengths_valid(283, 283, 24, 3, SIZE_MAX));
+    CHECK(!bridge_rsa_blob_lengths_valid(SIZE_MAX, SIZE_MAX, 24, SIZE_MAX, SIZE_MAX));
+    CHECK(!bridge_rsa_blob_lengths_valid(283, 283, 24, UINT32_MAX, UINT32_MAX));
+    CHECK(bridge_rsa_blob_lengths_valid(SIZE_MAX, SIZE_MAX, 24, 3, SIZE_MAX - 27));
+}
+
 static void test_digest_info(void) {
     static const unsigned char sha1_prefix[] = {
         0x30,0x21,0x30,0x09,0x06,0x05,0x2b,0x0e,0x03,0x02,0x1a,0x05,0x00,0x04,0x14
@@ -83,6 +99,7 @@ static void test_ec_point_encoding(void) {
 }
 
 int main(void) {
+    test_rsa_blob_lengths();
     test_digest_info();
     test_reverse();
     test_ec_point_encoding();

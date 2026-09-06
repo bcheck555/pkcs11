@@ -12,6 +12,8 @@ typedef enum bridge_hash_algorithm {
     BRIDGE_HASH_SHA512
 } bridge_hash_algorithm;
 
+int bridge_rsa_blob_lengths_valid(size_t capacity, size_t written, size_t header_len,
+                                  size_t exponent_len, size_t modulus_len);
 int bridge_parse_digest_info(const uint8_t *data, size_t data_len,
                              bridge_hash_algorithm *algorithm,
                              const uint8_t **digest, size_t *digest_len);

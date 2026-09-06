@@ -2,6 +2,17 @@
 
 #include <string.h>
 
+int bridge_rsa_blob_lengths_valid(size_t capacity, size_t written, size_t header_len,
+                                  size_t exponent_len, size_t modulus_len) {
+    size_t remaining;
+    if (written > capacity || written < header_len || !exponent_len || !modulus_len)
+        return 0;
+    remaining = written - header_len;
+    if (exponent_len > remaining) return 0;
+    remaining -= exponent_len;
+    return modulus_len <= remaining;
+}
+
 typedef struct digest_prefix {
     bridge_hash_algorithm algorithm;
     const uint8_t *bytes;
